@@ -7,13 +7,20 @@ const initModels = require('./models/init.model');
 const Users = require('./models/users.model');
 const Todos = require('./models/todos.models');
 
+const userRoutes = require('./routes/users.routes');
+const todosRoutes = require('./routes/todos.routes');
+const authRoutes = require('./routes/auth.routes');
+const cors = require('cors');
+require("dotenv").config();
+
+
 // crear una  instancia de express
 const app = express();
 
 app.use(express.json());
+app.use(cors());
 
-const PORT = 8000;
-
+const PORT = process.env.PORT;
 // probando la conexión a la base de datos
 db.authenticate()
     .then(() => console.log("Autenticación exitosa"))
@@ -28,6 +35,10 @@ db.sync({ force: false })
 app.get('/', (req, res) => {
     res.status(200).json({ message: "Bienvenido al servidor" })
 });
+
+app.use('/api/v1', userRoutes);
+app.use('/api/v1', todosRoutes);
+app.use('/api/v1', authRoutes);
 
 // definir las rutas de nuestros endpoints (ep = endpoints)
 // localhost:8000/users --> todo para usarios
@@ -101,6 +112,9 @@ app.delete('/users/:id', async (req, res) => {
             where: { id }
         });
         res.status(200).json(result);
+        // validar que el usuario no tenga tareas
+        //si tiene tareas responder "no se puede eliminar"
+        //si no tiene --> eliminarlo
     } catch (error) {
         res.status(400).json(error.message);
         console.log(error);
